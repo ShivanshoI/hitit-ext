@@ -29,7 +29,7 @@ This repo contains **only the extension**. The bridge server and Go SDK live els
 ```
 extension/
 ├── manifest.json       ← MV3 manifest
-├── config.js           ← DEV_MODE flag + per-environment config
+├── config.js           ← dev/prod environment config (comment-swapped)
 ├── background.js       ← Service worker: WS client + fetch executor
 ├── content.js          ← Reads the JWT from the app page's localStorage
 ├── popup.html/.js      ← Status + request log UI
@@ -41,11 +41,9 @@ extension/
 
 ## Environments
 
-`config.js` holds a single build-time switch:
-
-```js
-var DEV_MODE = true;   // false for Web Store builds
-```
+`config.js` holds two `BRIDGE_ENV` blocks. The development one is active; the
+production one is commented out. To switch, comment one and uncomment the other —
+exactly one must be active.
 
 | | `development` | `production` |
 |---|---|---|
@@ -53,9 +51,31 @@ var DEV_MODE = true;   // false for Web Store builds
 | App tab patterns | `localhost:5174` + `hit-it.co.in` | `hit-it.co.in` only |
 | Verbose logging | on | off |
 
-`config.js` is loaded first in both worlds — via `importScripts` in the service worker, and as the first entry in `content_scripts.js` — so `DEV_MODE` and `BRIDGE_ENV` are available everywhere.
+`config.js` is loaded first in both worlds — via `importScripts` in the service worker, and as the first entry in `content_scripts.js` — so `BRIDGE_ENV` is available everywhere.
+
+Note that `host_permissions` and `content_scripts` in `manifest.json` are **not**
+covered by this switch — manifest is static JSON and cannot read `BRIDGE_ENV`.
+A production build still requests localhost permission and still injects
+`content.js` on `localhost:5174`. See "Manifest is not environment-aware" below.
 
 Verbose logging prints request URLs, headers, and bodies, which are user data. That is why `debug` is off in production; only errors log there.
+
+---
+
+### Manifest is not environment-aware
+
+`manifest.json` is static JSON — Chrome reads it before any script runs, so it
+cannot branch on `BRIDGE_ENV`. Its `host_permissions` and `content_scripts` are
+therefore the same in every build:
+
+- The install prompt always says *"Read and change your data on localhost"*.
+  That is inherent to the product — fetching localhost is what the extension is for.
+- `content.js` runs on any `localhost:5174` page a user has open, not only yours.
+  It reads `localStorage.auth_token`, a key only the Hit-It app sets, so an
+  unrelated dev server on that port yields nothing.
+
+Neither blocks a release. `BRIDGE_ENV.appPatterns` is the part that *is*
+switchable, and it narrows to `hit-it.co.in` in production.
 
 ---
 
@@ -64,7 +84,7 @@ Verbose logging prints request URLs, headers, and bodies, which are user data. T
 1. Run the bridge server so `ws://localhost:8080/bridge` is reachable. This is the
    bridge's own port — your local API can be on any port, since the backend sends
    the full target URL with each request.
-2. Confirm `DEV_MODE = true` in `config.js`.
+2. Confirm the DEVELOPMENT block is the active one in `config.js`.
 3. `chrome://extensions` → enable **Developer mode** → **Load unpacked** → select `extension/`.
 4. Open the Hit-It app at `http://localhost:5174` and log in. The content script picks up the JWT from `localStorage.auth_token` and the extension connects on its own — the popup pill turns green.
 
@@ -87,7 +107,7 @@ A `4001` close code or an `AUTH_ERROR` frame clears the cached token and stops r
 
 ## Releasing
 
-1. Set `DEV_MODE = false` in `config.js`.
+1. In `config.js`, comment out the DEVELOPMENT block and uncomment the PRODUCTION one.
 2. Bump `version` in `manifest.json`.
 3. Zip the **contents** of `extension/` (not the folder itself) and upload to the Chrome Web Store.
 
