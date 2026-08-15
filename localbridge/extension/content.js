@@ -1,4 +1,4 @@
-// content.js - runs on your frontend page (hit-it.co.in / localhost:5173)
+// content.js - runs on your frontend page (hit-it.co.in / localhost:5174)
 // Reads the JWT from localStorage and forwards it to the background service worker.
 
 (function () {

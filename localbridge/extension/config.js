@@ -15,7 +15,7 @@ var BRIDGE_ENVS = {
     appPatterns: [
       'http://localhost/*',
       'http://127.0.0.1/*',
-      'http://localhost:5173/*',
+      'http://localhost:5174/*',
       'https://hit-it.co.in/*',
       '*://*.hit-it.co.in/*',
     ],

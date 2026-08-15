@@ -5,7 +5,7 @@ Routes requests from the deployed Hit-It backend to APIs running on **your own m
 ```
 Hit-It Backend (deployed)
     │
-    │  POST /request  {"method":"GET","url":"http://localhost:8080/api/..."}
+    │  POST /request  {"method":"GET","url":"http://localhost:3000/api/..."}
     ▼
 Bridge Server (WebSocket, deployed alongside the backend)
     │
@@ -13,9 +13,9 @@ Bridge Server (WebSocket, deployed alongside the backend)
     ▼
 Hit-It Bridge Extension (Chrome, on the developer's machine)  ← this repo
     │
-    │  fetch("http://localhost:8080/api/...")
+    │  fetch("http://localhost:3000/api/...")
     ▼
-Your local API
+Your local API  (any port — the backend picks the target URL)
 
     Response flows back up the same chain, keyed by requestId.
 ```
@@ -50,7 +50,7 @@ var DEV_MODE = true;   // false for Web Store builds
 | | `development` | `production` |
 |---|---|---|
 | Bridge WS URL | `ws://localhost:8080/bridge` | `wss://api.hit-it.co.in/bridge` |
-| App tab patterns | localhost + `hit-it.co.in` | `hit-it.co.in` only |
+| App tab patterns | `localhost:5174` + `hit-it.co.in` | `hit-it.co.in` only |
 | Verbose logging | on | off |
 
 `config.js` is loaded first in both worlds — via `importScripts` in the service worker, and as the first entry in `content_scripts.js` — so `DEV_MODE` and `BRIDGE_ENV` are available everywhere.
@@ -61,10 +61,12 @@ Verbose logging prints request URLs, headers, and bodies, which are user data. T
 
 ## Local development
 
-1. Run the bridge server so `ws://localhost:8080/bridge` is reachable.
+1. Run the bridge server so `ws://localhost:8080/bridge` is reachable. This is the
+   bridge's own port — your local API can be on any port, since the backend sends
+   the full target URL with each request.
 2. Confirm `DEV_MODE = true` in `config.js`.
 3. `chrome://extensions` → enable **Developer mode** → **Load unpacked** → select `extension/`.
-4. Open the Hit-It app and log in. The content script picks up the JWT from `localStorage.auth_token` and the extension connects on its own — the popup pill turns green.
+4. Open the Hit-It app at `http://localhost:5174` and log in. The content script picks up the JWT from `localStorage.auth_token` and the extension connects on its own — the popup pill turns green.
 
 The service worker's console (`chrome://extensions` → **service worker**) shows the full request log.
 
