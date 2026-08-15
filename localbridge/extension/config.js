@@ -15,8 +15,9 @@ var BRIDGE_ENV = {
     'http://localhost/*',
     'http://127.0.0.1/*',
     'http://localhost:5174/*',
-    'https://hit-it.co.in/*',
-    '*://*.hit-it.co.in/*',
+    // Production app — commented out so dev never picks up a live-site token.
+    // 'https://hit-it.co.in/*',
+    // '*://*.hit-it.co.in/*',
   ],
   debug: true,
 };
