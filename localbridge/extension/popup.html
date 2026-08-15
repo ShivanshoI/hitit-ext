@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hit-It Bridge</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
+
+:root {
+  --bg:      #0c0c14;
+  --surface: #14141f;
+  --border:  #252535;
+  --green:   #00e5a0;
+  --purple:  #7c6fff;
+  --red:     #ff5555;
+  --yellow:  #ffd166;
+  --blue:    #4db8ff;
+  --text:    #ddddf0;
+  --muted:   #6666a0;
+  --dim:     #33334a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  width: 300px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+
+.hdr {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  font-weight: 700;
+  font-size: 14px;
+  flex: 1;
+  letter-spacing: -0.3px;
+}
+
+.logo em { color: var(--muted); font-style: normal; font-weight: 400; }
+
+/* Status pill */
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+
+.pill.connected        { color: var(--green);  background: rgba(0,229,160,0.08); }
+.pill.disconnected     { color: var(--muted);  background: transparent; border-color: var(--dim); }
+.pill.connecting       { color: var(--yellow); background: rgba(255,209,102,0.08); }
+.pill.waiting_for_login{ color: var(--blue);   background: rgba(77,184,255,0.08); }
+.pill.auth_error       { color: var(--red);    background: rgba(255,85,85,0.08); }
+.pill.error            { color: var(--red);    background: rgba(255,85,85,0.08); }
+
+.dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.dot.blink { animation: blink 1.2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+/* State cards */
+.card {
+  margin: 14px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+  display: none;
+}
+
+.card.visible { display: block; }
+
+.card a {
+  color: var(--purple);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.card a:hover { text-decoration: underline; }
+
+.card.auth-error { border-color: rgba(255,85,85,0.3); }
+
+/* Stats */
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.stat {
+  background: var(--bg);
+  padding: 10px 6px;
+  text-align: center;
+}
+
+.sval {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 3px;
+}
+
+.slbl {
+  font-size: 9px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Log */
+.log-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px 6px;
+}
+
+.log-lbl {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.clr-btn {
+  background: none;
+  border: none;
+  color: var(--dim);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.12s;
+}
+
+.clr-btn:hover { color: var(--red); }
+
+.log {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 0 14px 14px;
+}
+
+.log::-webkit-scrollbar { width: 3px; }
+.log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.log-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+}
+
+.method { font-weight: 700; min-width: 40px; font-size: 10px; }
+.GET    { color: var(--blue); }
+.POST   { color: var(--green); }
+.PUT    { color: var(--yellow); }
+.DELETE { color: var(--red); }
+.PATCH  { color: #c084fc; }
+
+.log-url {
+  flex: 1;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+}
+
+.log-status { font-weight: 700; font-size: 11px; }
+.ok  { color: var(--green); }
+.err { color: var(--red); }
+
+.empty {
+  text-align: center;
+  color: var(--dim);
+  padding: 18px 0;
+  font-size: 11px;
+}
+
+/* Disconnect btn */
+.footer {
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.disc-btn {
+  width: 100%;
+  padding: 7px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.disc-btn:hover { border-color: var(--red); color: var(--red); }
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="logo">Hit-It <em>Bridge</em></div>
+  <div class="pill disconnected" id="pill">
+    <div class="dot" id="dot"></div>
+    <span id="pillTxt">offline</span>
+  </div>
+</div>
+
+<!-- Shown when not logged into the app -->
+<div class="card" id="cardLogin">
+  Not connected.<br>
+  <a href="https://hit-it.co.in" target="_blank">Open Hit-It</a> and log in —
+  the extension will connect automatically.
+</div>
+
+<!-- Shown when token is invalid/expired -->
+<div class="card auth-error" id="cardAuthError">
+  Session expired.<br>
+  <a href="https://hit-it.co.in" target="_blank">Log in again</a> to reconnect.
+</div>
+
+<!-- Shown when connected — stats + log -->
+<div id="connectedView" style="display:none">
+  <div class="stats">
+    <div class="stat"><div class="sval" id="sTotal" style="color:var(--purple)">0</div><div class="slbl">Total</div></div>
+    <div class="stat"><div class="sval" id="sOk"    style="color:var(--green)">0</div><div class="slbl">OK</div></div>
+    <div class="stat"><div class="sval" id="sErr"   style="color:var(--red)">0</div><div class="slbl">Errors</div></div>
+  </div>
+
+  <div class="log-hdr">
+    <span class="log-lbl">Recent</span>
+    <button class="clr-btn" id="btnClr">clear</button>
+  </div>
+
+  <div class="log" id="logEl">
+    <div class="empty">no requests yet</div>
+  </div>
+
+  <div class="footer">
+    <button class="disc-btn" id="btnDisc">Disconnect</button>
+  </div>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
