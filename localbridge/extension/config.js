@@ -10,6 +10,8 @@
 var BRIDGE_ENV = {
   name: 'development',
   bridgeWsUrl: 'ws://localhost:8080/bridge',
+  // Where the popup's "Open Hit-It" / "Log in again" links point.
+  appUrl: 'http://localhost:5174',
   // Tabs the service worker asks for a token after a restart.
   appPatterns: [
     'http://localhost/*',
@@ -26,6 +28,7 @@ var BRIDGE_ENV = {
 // var BRIDGE_ENV = {
 //   name: 'production',
 //   bridgeWsUrl: 'wss://api.hit-it.co.in/bridge',
+//   appUrl: 'https://hit-it.co.in',
 //   appPatterns: [
 //     'https://hit-it.co.in/*',
 //     '*://*.hit-it.co.in/*',

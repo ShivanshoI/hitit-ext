@@ -242,14 +242,14 @@ body {
 <!-- Shown when not logged into the app -->
 <div class="card" id="cardLogin">
   Not connected.<br>
-  <a href="https://hit-it.co.in" target="_blank">Open Hit-It</a> and log in —
+  <a class="app-link" target="_blank">Open Hit-It</a> and log in —
   the extension will connect automatically.
 </div>
 
 <!-- Shown when token is invalid/expired -->
 <div class="card auth-error" id="cardAuthError">
   Session expired.<br>
-  <a href="https://hit-it.co.in" target="_blank">Log in again</a> to reconnect.
+  <a class="app-link" target="_blank">Log in again</a> to reconnect.
 </div>
 
 <!-- Shown when connected — stats + log -->
@@ -274,6 +274,7 @@ body {
   </div>
 </div>
 
+<script src="config.js"></script>
 <script src="popup.js"></script>
 </body>
 </html>

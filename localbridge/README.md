@@ -48,7 +48,8 @@ exactly one must be active.
 | | `development` | `production` |
 |---|---|---|
 | Bridge WS URL | `ws://localhost:8080/bridge` | `wss://api.hit-it.co.in/bridge` |
-| App tab patterns | `localhost:5174` + `hit-it.co.in` | `hit-it.co.in` only |
+| Popup app link | `http://localhost:5174` | `https://hit-it.co.in` |
+| App tab patterns | `localhost:5174` | `hit-it.co.in` only |
 | Verbose logging | on | off |
 
 `config.js` is loaded first in both worlds — via `importScripts` in the service worker, and as the first entry in `content_scripts.js` — so `BRIDGE_ENV` is available everywhere.

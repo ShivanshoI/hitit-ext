@@ -65,6 +65,20 @@ else
     *localhost*|*127.0.0.1*) fail "appPatterns still contain localhost: $pats" ;;
     *)                       pass "appPatterns are production-only" ;;
   esac
+
+  app=$(node -e "console.log(JSON.parse(process.argv[1]).appUrl || '')" "$env_json")
+  case "$app" in
+    https://*) pass "popup app link points at $app" ;;
+    "")        fail "appUrl is missing from the active env — popup links would be empty" ;;
+    *)         fail "appUrl is not https://: $app" ;;
+  esac
+fi
+
+# Links must come from BRIDGE_ENV, or dev builds send you to production.
+if grep -qE 'href="https?://' "$EXT/popup.html"; then
+  fail "hardcoded http(s) link in popup.html — set href from BRIDGE_ENV.appUrl instead"
+else
+  pass "popup.html has no hardcoded app links"
 fi
 
 section "2. Manifest"

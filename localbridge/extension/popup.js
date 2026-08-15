@@ -1,5 +1,11 @@
 var log = [];
 
+// The app lives on localhost in development — keep the popup's links from
+// sending you to production while you are working locally.
+Array.prototype.forEach.call(document.querySelectorAll('.app-link'), function(a) {
+  a.href = BRIDGE_ENV.appUrl;
+});
+
 var STATUS_LABELS = {
   connected:         'active',
   connecting:        'connecting',
