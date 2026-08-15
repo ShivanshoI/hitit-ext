@@ -27,20 +27,49 @@ function setStatus(s) {
     (s === 'connected' || s === 'connecting') ? 'block' : 'none';
 }
 
+var KNOWN_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'];
+
+function span(className, text) {
+  var el = document.createElement('span');
+  el.className = className;
+  el.textContent = text;
+  return el;
+}
+
+// Log entries carry method/url straight from the bridge server's REQUEST
+// frames, so they are untrusted strings — build nodes, never innerHTML.
+function logRow(e) {
+  var path;
+  try { path = new URL(e.url).pathname; } catch (err) { path = e.url; }
+
+  var method = String(e.method || '');
+  var methodClass = KNOWN_METHODS.indexOf(method) !== -1 ? ' ' + method : '';
+  var sOk = !e.error && e.status >= 200 && e.status < 300;
+
+  var url = span('log-url', path);
+  url.title = e.url;
+
+  var row = document.createElement('div');
+  row.className = 'log-row';
+  row.appendChild(span('method' + methodClass, method));
+  row.appendChild(url);
+  row.appendChild(span('log-status ' + (sOk ? 'ok' : 'err'), e.error ? 'ERR' : (e.status || '?')));
+  return row;
+}
+
 function renderLog() {
   var el = document.getElementById('logEl');
-  if (!log.length) { el.innerHTML = '<div class="empty">no requests yet</div>'; return; }
+  el.textContent = '';
 
-  el.innerHTML = log.slice(0, 30).map(function(e) {
-    var path;
-    try { path = new URL(e.url).pathname; } catch(err) { path = e.url; }
-    var sOk = !e.error && e.status >= 200 && e.status < 300;
-    return '<div class="log-row">' +
-      '<span class="method ' + e.method + '">' + e.method + '</span>' +
-      '<span class="log-url" title="' + e.url + '">' + path + '</span>' +
-      '<span class="log-status ' + (sOk ? 'ok' : 'err') + '">' + (e.error ? 'ERR' : (e.status || '?')) + '</span>' +
-      '</div>';
-  }).join('');
+  if (!log.length) {
+    var empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.textContent = 'no requests yet';
+    el.appendChild(empty);
+    return;
+  }
+
+  log.slice(0, 30).forEach(function(e) { el.appendChild(logRow(e)); });
 
   document.getElementById('sTotal').textContent = log.length;
   document.getElementById('sOk').textContent  = log.filter(function(e) { return !e.error && e.status >= 200 && e.status < 300; }).length;
