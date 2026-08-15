@@ -175,7 +175,9 @@ async function executeRequest({ requestId, method, url, headers = {}, body, time
   try {
     parsed = new URL(url);
   } catch (e) {
-    console.error('❌ Invalid URL — could not parse:', url, e.message);
+    // The URL is user data — keep it out of production logs, same as bodies.
+    console.error('[Hit-It Bridge] ❌ REQUEST carried an unparseable URL');
+    dbg.log('unparseable url:', url, e.message);
     dbg.groupEnd();
     return respond(requestId, 400, {}, { error: 'Invalid URL' }, 0);
   }
